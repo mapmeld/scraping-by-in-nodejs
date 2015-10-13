@@ -5,15 +5,16 @@ This tutorial is for newbies or near-newbies to NodeJS, who have written some jQ
 
 By the end of the tutorial, you will publish a site-scraping module on npmjs.org - then you and other developers can get data out of that site by installing your module.
 
-This repo contains the code for my own scraper module, which returns a list of world leaders. You're welcome to look at the code or use it IRL.
+This repo contains the code for my own scraper module, which returns a list of world leaders from Wikipedia. You're welcome to look at the code or use it IRL.
 
 ### Thinking about what web servers are
 
-If you're coming into this with 100% client-side experience, you might want to know how to think about "server-side JavaScript". Most of my client-side
-work was creating maps on web pages, so I wondered, how would I load the Google Maps API into Node? How would I respond to events like click and drag?
+If you're coming into this with 100% client-side experience, you might have questions about "server-side JavaScript". Most of my client-side
+work was creating visualizations maps on web pages, so at first I wondered, how would I load the Google Maps API into Node? How would I respond to events like click and drag?
 How would people see my pages?
 
-A web server program is a hub designed for three things: figuring out what the user wants, finding that information, and responding to the user.
+A web server program is a hub designed for three things: figuring out what the user wants, finding that information, and responding to the user. It can be written in many languages, and JavaScript is just
+being repurposed to write this kind of program.
 
 Let's look at a pseudocode example:
 
@@ -28,7 +29,7 @@ server.onRequest = function (url) {
     // homepage - respond with static HTML page
     send(homepage.html);
   } else if (url == "/profile/:username") {
-    // look up this username in the database
+    // look up this user in the database
     database.findUser(username, function (userData) {
       // when the database finds this user and reports back, we can continue responding
       // the template will be written in a format like HAML, JADE, ERB, etc
@@ -40,21 +41,20 @@ server.onRequest = function (url) {
 };
 ```
 
-In this code, we don't know what the website looks like, and we didn't write any browser code. The browser just receives HTML without knowing what happened inside the server.
+In this code, we don't know what the website looks like, and we didn't write any code for the browser. The browser just receives HTML without knowing what happened inside the server.
 
 To repeat from before: the server was designed around three things: figuring out what the user wants, finding that information, and responding to the user.
 
 ### Thinking about NodeJS, servers, and modules
 
-NodeJS servers are actually similar to that code example, especially if you use a framework like ExpressJS. But before you write a server, it's easier to write a module. A module can be a set of data
+NodeJS servers are similar to that pseudocode example, especially if you use a framework like ExpressJS. But before you write a server, it's easier to write a module. A module can be a set of data
 and functions which you can import into other NodeJS programs. Using Browserify and WebPack, you can
-also use many modules as client-side libraries.
+also use many modules as client-side / browser libraries. There are also NodeJS command line tools and
+small hardware devices.
 
-Many client-side libraries now specifically use NodeJS tools like Bower, Gulp, Grunt, Mocha, and Jasmine to compile, test, combine, and minify their code into the one .min.js file you load in the browser.
+In this example, scraping a [list of world leaders from Wikipedia] (https://en.wikipedia.org/wiki/List_of_current_heads_of_state_and_government), there is a good use case to separate your app and the leader module. You could probably turn it into an interesting API, where people can request the full table, an individual country, or historical data.
 
-In this example, scraping a [list of world leaders from Wikipedia https://en.wikipedia.org/wiki/List_of_current_heads_of_state_and_government], there's no reason that the leader-finding code needs to be combined with the server code. You could probably turn it into an interesting API, where people can request the full table, an individual country, or historical data.
-
-If you don't do a lot of calls to other websites and servers, you're probably thinking about making a step-by-step, synchronous program like this:
+If you don't do a lot of calls to other websites and servers, you might think about making a step-by-step, synchronous program like this:
 
 ```javascript
 // pseudocode!
@@ -64,26 +64,26 @@ server.onRequest = function(url) {
 };
 ```
 
-This won't work because getting the leaders involves scraping a Wikipedia page and waiting for a response at a later time. This means you would want to write an asynchronous program with a callback:
+This won't work because getting the leaders includes scraping a Wikipedia page and waiting for a response at a later time. This means you would want to write an asynchronous program with a callback:
 
 ```javascript
 // pseudocode!
 server.onRequest = function(url) {
-  getLeaders(anyErrors, function (leaders) {
+  getLeaders(function (leaders) {
     send(leaders);
   });
 };
 ```
 
-The getLeaders function does not return anything. It simply starts a chain of requests and processing which eventually calls back your function with useful information.
+The getLeaders function does not return anything. Instead it starts a chain of requests and processing, and you give it a function to call when it's done.
 
 ### Create your project with git init and npm init
 
 Run this code in the command prompt:
 
 ```bash
-mkdir leader-scraper
-cd leader-scraper
+mkdir world-leaders
+cd world-leaders
 git init
 npm init
 ```
@@ -92,13 +92,13 @@ npm init will ask you some questions. You can type something or press Enter to a
 
 For "git repository" you can leave it blank, or create a repo on GitHub. Paste in the HTTP URL.
 
-For "license" you can review [several options http://choosealicense.com/] for open-sourcing your code, but I typically use MIT.
+For "license" you can review [several options](http://choosealicense.com/) for open-sourcing your code, but I typically use MIT.
 
-Running npm init creates package.json, the main source of information about your module, its use, and the libraries that it needs to work. You can modify these results later or re-run npm init.
+Running npm init creates package.json, the main source of information about your module, its use, and the libraries that it needs to work. You can modify this file later directly, or re-run npm init.
 
 ### Install Node modules as dependencies
 
-You don't need to re-invent the wheel for requesting an HTML page. Continue in the command prompt:
+You don't need to re-invent the wheel to load an HTML page into your script. In the command prompt:
 
 ```bash
 npm install request --save
@@ -115,7 +115,7 @@ npm install cheerio --save
 ### GET-ing a page
 
 I'm creating a file called index.js to be the main part of my script. The first thing it needs to do to scrape a webpage is to load the HTML source of the page as a string. Let's try that, and then use
-console.log to print it out to the command line and see if it worked.
+console.log to print it out to the command line, to see if it worked.
 
 ```javascript
 // real JavaScript, not pseudocode anymore
@@ -126,7 +126,8 @@ var request = require('request');
 
 // request is a function that I can use like this:
 
-request("https://en.wikipedia.org/wiki/List_of_current_heads_of_state_and_government", function (anyError, server_response, body) {
+request("https://en.wikipedia.org/wiki/List_of_current_heads_of_state_and_government",
+  function (anyError, server_response, body) {
   // when you're done getting the page, this gets called
 
   if (anyError) {
@@ -141,7 +142,7 @@ request("https://en.wikipedia.org/wiki/List_of_current_heads_of_state_and_govern
 
 Run ```node index.js``` and see what happens.
 
-If everything works, you should see a bunch of HTML output to the command line. If you are offline and unab;e to connect to Wikipedia HTTPS, you see an error like this:
+If everything works, you should see a bunch of HTML output to the command line. If you are offline and unable to connect to Wikipedia HTTPS, you see an error like this:
 
 ```bash
 scraping-by-in-node-js/versions/1.js:14
@@ -199,7 +200,9 @@ Review the HTML above. If you wanted to get a list of leader td elements in jQue
 $("table.wikitable td")
 ```
 
-You could then get the text of each using several jQuery functions, but let's write a for loop for now that we could test in the browser on Wikipedia itself:
+Go to Wikipedia, open the browser, and start testing this yourself.
+
+There are several jQuery functions you could use to iterate, but to avoid losing anyone, let's write a for loop for now:
 
 ```javascript
 var leaders = $("table.wikitable td");
@@ -217,7 +220,7 @@ Prime Minister – Hwang Kyo-ahn
 
 ### Translating jQuery to Cheerio to get leader names
 
-Let's go back to index.js and start using the cheerio module that we installed. It's a good idea to open up [the official documentation on npmjs https://www.npmjs.com/package/cheerio] for this module.
+Let's go back to index.js and start using the cheerio module that we installed. It's a good idea to open up [the official documentation on npmjs](https://www.npmjs.com/package/cheerio) for this module.
 
 ```javascript
 // versions/2.js
@@ -226,7 +229,8 @@ Let's go back to index.js and start using the cheerio module that we installed. 
 var request = require('request');
 var cheerio = require('cheerio');
 
-request("https://en.wikipedia.org/wiki/List_of_current_heads_of_state_and_government", function (anyError, server_response, body) {
+request("https://en.wikipedia.org/wiki/List_of_current_heads_of_state_and_government",
+  function (anyError, server_response, body) {
   // when you're done getting the page, this gets called
 
   if (anyError) {
@@ -259,7 +263,8 @@ var request = require('request');
 var cheerio = require('cheerio');
 
 function scrapeData (callback) {
-  request("https://en.wikipedia.org/wiki/List_of_current_heads_of_state_and_government", function (anyError, server_response, body) {
+  request("https://en.wikipedia.org/wiki/List_of_current_heads_of_state_and_government",
+    function (anyError, server_response, body) {
     if (anyError) {
       callback(anyError, null);
     } else {
