@@ -79,6 +79,8 @@ The getLeaders function does not return anything. Instead it starts a chain of r
 
 ### Create your project with git init and npm init
 
+First, install NodeJS and git on your computer.
+
 Run this code in the command prompt:
 
 ```bash
@@ -159,6 +161,8 @@ This is a good time to **check that your data is in the HTML source of the page*
 Here's part of the HTML source for the head of state and government:
 
 ```html
+<table class="wikitable">
+...
 <tr>
   <th style="font-weight:normal; text-align:left;">
     <a href="/wiki/United_Kingdom" title="United Kingdom">United Kingdom</a>
@@ -188,13 +192,15 @@ Here's part of the HTML source for the head of state and government:
     </div>
   </td>
 </tr>
+...
+</table>
 ```
 
-That has some interesting data: the country's name and article, the position's name and Wikipedia article, and the current name and Wikipedia article for that leader. We can see that each country gets a tr element, and the leader gets a td element, which can be two columns wide if the leader is head of state and head of government.
+The HTML has some interesting data: the country's name and article, the position's name and Wikipedia article, and the current name and Wikipedia article for that leader. We can see that each country gets a tr element, and the leader gets a td element, which can be two columns wide if -like in the US- the leader is head of state and head of government.
 
 ### Using jQuery to get leader names
 
-Review the HTML above. If you wanted to get a list of leader td elements in jQuery, you can do this:
+In jQuery, if you wanted to get a list of leader td elements out of that HTML, you would do this:
 
 ```javascript
 $("table.wikitable td")
@@ -211,7 +217,7 @@ for (var i = 0; i < leaders.length; i++) {
 }
 ```
 
-Although some of the leaders have additional text, it's mostly good:
+Although some of the leaders' names have additional text, it's mostly good:
 
 ```
 President – Park Geun-hye[n 1]
@@ -248,11 +254,11 @@ request("https://en.wikipedia.org/wiki/List_of_current_heads_of_state_and_govern
 });
 ```
 
-Cool! It worked!
+Cool! It should work the same in NodeJS as in the browser!
 
 ### Returning JSON data instead of logging
 
-If this scraper is ever going to become a module, I need a function that makes a JSON object on command, instead of just dumping out text.
+If this scraper is ever going to become a module, I need a function that returns a JSON object on command, instead of just dumping out text.
 
 I'm going to call this function scrapeData. Because it has the asynchronous code from requesting a page inside of it, I will pass data back through a callback function instead of trying to use "return". This callback function will be the new way to handle errors and returned data.
 
@@ -342,7 +348,7 @@ Something like this:
 ]
 ```
 
-I'm going to jump ahead... the code is about 100 lines, most of it specific to my scraper. Here are a few snippets which are related to Cheerio looking a lot like jQuery:
+I'm going to jump ahead... my final code is about 100 lines, but most of it is specific to my scraper. Here are a few snippets which show you how much Cheerio looks like jQuery:
 
 ```javascript
 if (country.find("td").length > 1) {
@@ -406,7 +412,7 @@ If everything goes well, you should have a module listed at npmjs.org/package/PA
 
 If you ever need to update the module, go to package.json, increase your version number, and re-run ```npm publish```. You cannot re-publish a module without changing the version number, because that would be confusing.
 
-### Having multiple functions
+### Modules with multiple functions
 
 You have a simple ```leaders()``` function, but what if you want your module to be a little smarter, returning leaders for a specific country? You can add a new function and rewrite module.exports like this:
 
@@ -417,7 +423,7 @@ module.exports = {
 };
 ```
 
-You can also include some JSON data in your exports. This isn't done so much, but it's helpful if your module comes with a JSON dataset.
+You can also include JSON data in your exports. This isn't done so much, but it's helpful if your module comes with an interesting dataset.
 
 ```javascript
 module.exports = {
@@ -425,6 +431,52 @@ module.exports = {
   fromCountry: fromCountry,
   credit: "CC-BY-SA Wikipedia.org"
 };
+```
+
+Here's how it works when someone uses your module:
+
+```javascript
+var leaders = require('world-leaders');
+leaders.all(function (err, allLeaders) {
+  console.log(allLeaders);
+  console.log("from " + leaders.credit);
+});
+```
+
+To avoid repeating your code, you should have fromCountry use your own scrapeData function.
+**Don't overload Wikipedia with requests** - save your scraped data somewhere outside your function
+and it will stick around in memory. When you restart the server, it will re-scrape.
+
+```javascript
+var savedData = null;
+
+function scrapeData(callback) {
+  if (savedData) {
+    // already scraped! so fast now
+    return callback(null, savedData);
+  }
+  ...
+    // whenever you finish scraping, save the response
+    savedData = countryData;
+    callback(null, countryData);
+  ...
+}
+
+function fromCountry(countryName, callback) {
+  // fromCountry doesn't need to know if it is the scraping or viewing a cached copy
+  // just reuse your existing code
+  scrapeData(function (err, countries) {
+    if (err) {
+      return callback(err, null);
+    }
+    for (var c = 0; c < countries.length; c++) {
+      if (countries[c].country == countryName) {
+        return callback(null, countries[c]);
+      }
+    }
+    callback("country not found", null);
+  });
+}
 ```
 
 ### Testing your node module

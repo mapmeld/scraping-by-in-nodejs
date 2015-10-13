@@ -1,7 +1,9 @@
-// versions/4.js
+// versions/5.js
 
 var request = require('request');
 var cheerio = require('cheerio');
+
+var savedData = null;
 
 function scrapeData (callback) {
   request("https://en.wikipedia.org/wiki/List_of_current_heads_of_state_and_government", function (anyError, server_response, body) {
@@ -92,4 +94,21 @@ function scrapeData (callback) {
   });
 }
 
-module.exports = scrapeData;
+function fromCountry(countryName, callback) {
+  scrapeData(function (err, countries) {
+    if (err) {
+      return callback(err, null);
+    }
+    for (var c = 0; c < countries.length; c++) {
+      if (countries[c].country == countryName) {
+        return callback(null, countries[c]);
+      }
+    }
+    callback("country not found", null);
+  });
+}
+
+module.exports = {
+  all: scrapeData,
+  fromCountry: fromCountry
+};
