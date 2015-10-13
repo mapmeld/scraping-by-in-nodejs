@@ -7,7 +7,7 @@ By the end of the tutorial, you will publish a site-scraping module on npmjs.org
 
 This repo contains the code for my own scraper module, which returns a list of world leaders. You're welcome to look at the code or use it IRL.
 
-1. Thinking about what web servers are
+### Thinking about what web servers are
 
 If you're coming into this with 100% client-side experience, you might want to know how to think about "server-side JavaScript". Most of my client-side
 work was creating maps on web pages, so I wondered, how would I load the Google Maps API into Node? How would I respond to events like click and drag?
@@ -44,7 +44,7 @@ In this code, we don't know what the website looks like, and we didn't write any
 
 To repeat from before: the server was designed around three things: figuring out what the user wants, finding that information, and responding to the user.
 
-2. Thinking about NodeJS, servers, and modules
+### Thinking about NodeJS, servers, and modules
 
 NodeJS servers are actually similar to that code example, especially if you use a framework like ExpressJS. But before you write a server, it's easier to write a module. A module can be a set of data
 and functions which you can import into other NodeJS programs. Using Browserify and WebPack, you can
@@ -77,7 +77,7 @@ server.onRequest = function(url) {
 
 The getLeaders function does not return anything. It simply starts a chain of requests and processing which eventually calls back your function with useful information.
 
-3. Create your project with git init and npm init
+### Create your project with git init and npm init
 
 Run this code in the command prompt:
 
@@ -90,14 +90,13 @@ npm init
 
 npm init will ask you some questions. You can type something or press Enter to accept a suggestion / leave it blank.
 
-For "git repository" you can leave it blank. Re-run npm init once you've done ```git remote add``` and
-it'll find it.
+For "git repository" you can leave it blank, or create a repo on GitHub. Paste in the HTTP URL.
 
 For "license" you can review [several options http://choosealicense.com/] for open-sourcing your code, but I typically use MIT.
 
 Running npm init creates package.json, the main source of information about your module, its use, and the libraries that it needs to work. You can modify these results later or re-run npm init.
 
-4. Install Node modules as dependencies
+### Install Node modules as dependencies
 
 You don't need to re-invent the wheel for requesting an HTML page. Continue in the command prompt:
 
@@ -113,7 +112,7 @@ This tutorial also uses Cheerio, an awesome module which lets you use jQuery-lik
 npm install cheerio --save
 ```
 
-5. GET-ing a page
+### GET-ing a page
 
 I'm creating a file called index.js to be the main part of my script. The first thing it needs to do to scrape a webpage is to load the HTML source of the page as a string. Let's try that, and then use
 console.log to print it out to the command line and see if it worked.
@@ -192,7 +191,7 @@ Here's part of the HTML source for the head of state and government:
 
 That has some interesting data: the country's name and article, the position's name and Wikipedia article, and the current name and Wikipedia article for that leader. We can see that each country gets a tr element, and the leader gets a td element, which can be two columns wide if the leader is head of state and head of government.
 
-6. Using jQuery to get leader names
+### Using jQuery to get leader names
 
 Review the HTML above. If you wanted to get a list of leader td elements in jQuery, you can do this:
 
@@ -216,7 +215,7 @@ President – Park Geun-hye[n 1]
 Prime Minister – Hwang Kyo-ahn
 ```
 
-7. Translating jQuery to Cheerio to get leader names
+### Translating jQuery to Cheerio to get leader names
 
 Let's go back to index.js and start using the cheerio module that we installed. It's a good idea to open up [the official documentation on npmjs https://www.npmjs.com/package/cheerio] for this module.
 
@@ -247,9 +246,9 @@ request("https://en.wikipedia.org/wiki/List_of_current_heads_of_state_and_govern
 
 Cool! It worked!
 
-8. Returning JSON data instead of logging
+### Returning JSON data instead of logging
 
-If this scraper is ever going to become a module, I need a function that returns a JSON object on command, instead of just dumping text to the command line.
+If this scraper is ever going to become a module, I need a function that makes a JSON object on command, instead of just dumping out text.
 
 I'm going to call this function scrapeData. Because it has the asynchronous code from requesting a page inside of it, I will pass data back through a callback function instead of trying to use "return". This callback function will be the new way to handle errors and returned data.
 
@@ -298,7 +297,7 @@ When I run ```node index.js```, I now get a JSON array of leader names:
 ...
 ```
 
-9. Make your data awesome
+### Make your data awesome
 
 If you want this module to be useful to you and others, keep pushing to organize and improve the data.
 This list of leader names is interesting, but if I were getting JSON data in my app, I'd like it to be cleaner, and I'd like it to be organized by country. I'd also like it to handle unusual cases, like countries with multiple heads of state / heads of government.
@@ -356,7 +355,7 @@ person.find("sup").remove();
 
 You can view the full code here: <a href="https://github.com/mapmeld/scraping-by-in-node-js/blob/master/versions/4.js">https://github.com/mapmeld/scraping-by-in-node-js/blob/master/versions/4.js</a>
 
-10. Turning it into a module
+### Turning your script into a module
 
 The function which you made can be turned into a reusable module, similar to how you were able to do this:
 
@@ -382,7 +381,7 @@ function scrapeData (callback) { ... }
 module.exports = scrapeData;
 ```
 
-OK great. Now you can test it in the Node REPL. On your command line, type ```node``` and then enter this:
+Now you can test it in the Node REPL. On your command line, type ```node``` and then enter this:
 
 ```javascript
 leaders = require('./index.js');
@@ -392,7 +391,7 @@ leaders(function(err, data) { console.log(JSON.stringify(data)) })
 
 If everything went OK, you should first get an "undefined" response, from your function not returning anything, then when the request finishes, your data should come out.
 
-11. Publishing your node module
+### Publishing your node module
 
 Go to npmjs.org and create an account. Confirm your e-mail.
 
@@ -402,54 +401,6 @@ If everything goes well, you should have a module listed at npmjs.org/package/PA
 
 If you ever need to update the module, go to package.json, increase your version number, and re-run ```npm publish```. You cannot re-publish a module without changing the version number, because that would be confusing.
 
-12. Testing your node module
+### Testing your node module
 
-13. Including your package in a server
-
-```javascript
-// pseudocode!!
-
-cnnWebsite.onGetPage = function (url) {
-  if (url == "/") {
-    // this is the homepage - we want to show the top stories
-    // top stories change a lot, so we don't write the HTML by hand. instead, ask the database for the top stories
-
-    database.getTopStories();
-    database.onFoundResults = function (anyErrors, results) {
-      // after the database call, put all the next steps inside this onFoundResults "callback" function
-
-      // don't use "return"; instead use a function which makes a standard response to the browser (depends on framework)
-      // the browser will just see HTML come back. It won't talk directly to the database or know that I generated the page with a program
-      showStories(results);
-    };
-
-    // don't put any code here after the database call - the top stories are only known inside the callback function, when the database sends them back
-    // it's all up to that callback now - we don't even "return" anything
-  }
-  else if (url == "/about") {
-    // the about page doesn't have stories on it, so we can just return some static HTML
-    sendTeamPageHTML();
-  }
-  else if (url.startsWith("/search")) {
-    // a URL looks like example.com/search?query=Obama
-    // let's separate out the search term, Obama
-    searchTerm = url.getParameter("query");
-
-    database.getResultsFor(searchTerm)
-    database.onFoundResults = function (anyErrors, results) {
-      if (anyErrors) {
-        // I didn't use anyErrors on the last function... sorry
-        // there's a chance that the database will screw up and send back an error
-        // in NodeJS, callback functions usually have the first parameter be an error object or null if there's no error
-        // sending an error page is usually better than "throw" or ignoring error handling, which could crash the whole site
-        showErrorPage();
-      } else {
-        showStories(results);
-      }
-    };
-
-    // again, this line is outside of the database callback so it doesn't know what the results are
-    // write any next steps inside the callback
-  }
-};
-```
+### Including your package in a server
