@@ -3,14 +3,14 @@
 
 This tutorial is for newbies or near-newbies to NodeJS, who have written some jQuery before.
 
-By the end of the tutorial, you will publish a site-scraping module on npmjs.org - then you and other developers can get data out of that site by installing your module.
+By the end of the tutorial, you will publish a site-scraping module on npmjs.com - then you and other developers can get data out of that site by installing your module.
 
 This repo contains the code for my own scraper module, which returns a list of world leaders from Wikipedia. You're welcome to look at the code or use it IRL.
 
 ### Thinking about what web servers are
 
 If you're coming into this with 100% client-side experience, you might have questions about "server-side JavaScript". Most of my client-side
-work was creating visualizations maps on web pages, so at first I wondered, how would I load the Google Maps API into Node? How would I respond to events like click and drag?
+work was creating visualizations and maps on web pages, so at first I wondered, how would I load the Google Maps API into Node? How would I respond to events like click and drag?
 How would people see my pages?
 
 A web server program is a hub designed for three things: figuring out what the user wants, finding that information, and responding to the user. It can be written in many languages, and JavaScript is just
@@ -106,7 +106,7 @@ You don't need to re-invent the wheel to load an HTML page into your script. In 
 npm install request --save
 ```
 
-This asks npmjs.org if it has a module named "request", and installs the latest version. Adding --save puts the module and its version into your package.json file, under "dependencies".
+This asks npmjs.com if it has a module named "request", and installs the latest version. Adding --save puts the module and its version into your package.json file, under "dependencies".
 
 This tutorial also uses Cheerio, an awesome module which lets you use jQuery-like features. Let's install that one, too:
 
@@ -364,7 +364,7 @@ wikiLink = title.find("a").attr("href");
 person.find("sup").remove();
 ```
 
-You can view the full code here: <a href="https://github.com/mapmeld/scraping-by-in-node-js/blob/master/versions/4.js">https://github.com/mapmeld/scraping-by-in-node-js/blob/master/versions/4.js</a>
+You can view the full code here: <a href="https://github.com/mapmeld/scraping-by-in-nodejs/blob/master/versions/4.js">https://github.com/mapmeld/scraping-by-in-nodejs/blob/master/versions/4.js</a>
 
 ### Turning your script into a module
 
@@ -404,11 +404,11 @@ If everything went OK, you should first get an "undefined" response, from your f
 
 ### Publishing your node module
 
-Go to npmjs.org and create an account. Confirm your e-mail.
+Go to npmjs.com and create an account. Confirm your e-mail.
 
 Then, on the command line, run ```npm publish```. You will be asked to log in.
 
-If everything goes well, you should have a module listed at npmjs.org/package/PACKAGENAME
+If everything goes well, you should have a module listed at npmjs.com/package/PACKAGENAME
 
 If you ever need to update the module, go to package.json, increase your version number, and re-run ```npm publish```. You cannot re-publish a module without changing the version number, because that would be confusing.
 
