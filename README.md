@@ -337,7 +337,7 @@ Something like this:
           "wiki": "https://en.wikipedia.org/wiki/Barack_Obama"
         }
       }
-    ],
+    ]
   }
 ]
 ```
@@ -405,6 +405,27 @@ Then, on the command line, run ```npm publish```. You will be asked to log in.
 If everything goes well, you should have a module listed at npmjs.org/package/PACKAGENAME
 
 If you ever need to update the module, go to package.json, increase your version number, and re-run ```npm publish```. You cannot re-publish a module without changing the version number, because that would be confusing.
+
+### Having multiple functions
+
+You have a simple ```leaders()``` function, but what if you want your module to be a little smarter, returning leaders for a specific country? You can add a new function and rewrite module.exports like this:
+
+```javascript
+module.exports = {
+  all: scrapeData,
+  fromCountry: fromCountry
+};
+```
+
+You can also include some JSON data in your exports. This isn't done so much, but it's helpful if your module comes with a JSON dataset.
+
+```javascript
+module.exports = {
+  all: scrapeData,
+  fromCountry: fromCountry,
+  credit: "CC-BY-SA Wikipedia.org"
+};
+```
 
 ### Testing your node module
 
