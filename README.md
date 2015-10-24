@@ -424,12 +424,13 @@ When you want to update the module, re-open package.json, increase your version 
 ### Modules with multiple functions
 
 In that example, we have one ```scrapeData``` function and, like with ```request```, we make the module
-be just one function.
+contain just one function.
 
-What if you want your module to be a little smarter, and have multiple functions?
-In this example, I want to return leaders for a specific country, too.
+What if you want your one module to be a little smarter, and have multiple functions and options?
+Suppose I want to return leaders for a specific country, too, or look up the country where a specific
+leader is from.
 
-You can add a new function and rewrite module.exports like this:
+You can add a new function and reorganize module.exports so you share both functions:
 
 ```javascript
 function scrapeData() { ... }
@@ -452,20 +453,21 @@ module.exports = {
 };
 ```
 
-If someone is writing a script, and they have your module installed, they might call the ```scrapeData```
-function, saved as module.exports.all, like this:
+If someone is writing a script, and they have your module installed, they can still use ```require("MODULENAME")```,
+but they need to call the specific function.
 
 ```javascript
 var leaders = require('world-leaders');
+
+// change from leaders() to leaders.all()
 leaders.all(function (err, allLeaders) {
   console.log(allLeaders);
   console.log("from " + leaders.credit);
 });
 ```
 
-To avoid repeating your code, you should have fromCountry use your own scrapeData function.
-**Don't overload Wikipedia with requests** - save your scraped data somewhere outside your function
-and it will stick around in memory. When you restart the server, it will re-scrape.
+To avoid repeating your scraper code, you can have fromCountry use the same scrapeData function.
+**Don't overload Wikipedia with requests** - save your scraped data somewhere.
 
 ```javascript
 var savedData = null;
