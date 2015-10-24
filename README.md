@@ -368,14 +368,17 @@ You can view the full code here: <a href="https://github.com/mapmeld/scraping-by
 
 ### Turning your script into a module
 
-The function which you made can be turned into a reusable module, similar to how you were able to do this:
+On the client-side, JavaScript programs are a collection of libraries and scripts. In NodeJS, you want to package
+your code into a publishable, reusable module. For example, your code uses the request and cheerio modules. Once you
+```npm install request``` and ```require("request")``` then you have it in your code, and you can call it like this:
 
 ```javascript
 var request = require("request");
-request("http://example.com", function() { ... });
+request("http://example.com", function(anyError, serverResponse, body) { ... });
 ```
 
-To make this happen, remove the call to scrapeData at the end, and instead write:
+Share your scrapeData function so that people can ```npm install``` your module someday.
+In the script, add this line at the end:
 
 ```javascript
 module.exports = scrapeData;
@@ -392,7 +395,9 @@ function scrapeData (callback) { ... }
 module.exports = scrapeData;
 ```
 
-Now you can test it in the Node REPL. On your command line, type ```node``` and then enter this:
+You can test that you are module-ready by using ```require``` in the Node REPL.
+
+On your command line, type ```node```, enter, and then enter these lines:
 
 ```javascript
 leaders = require('./index.js');
@@ -406,17 +411,31 @@ If everything went OK, you should first get an "undefined" response, from your f
 
 Go to npmjs.com and create an account. Confirm your e-mail.
 
+Open package.json again to make sure you have a good name and version number for your module.
+
 Then, on the command line, run ```npm publish```. You will be asked to log in.
 
-If everything goes well, you should have a module listed at npmjs.com/package/PACKAGENAME
+If everything goes well, you should have a module listed at npmjs.com/package/MODULENAME and it should be possible
+for others to download it by running ```npm install MODULENAME``` or including it as a dependency in
+*their* package.json file.
 
-If you ever need to update the module, go to package.json, increase your version number, and re-run ```npm publish```. You cannot re-publish a module without changing the version number, because that would be confusing.
+When you want to update the module, re-open package.json, increase your version number, and re-run ```npm publish```. You cannot re-publish a module without changing the version number, because that would be confusing.
 
 ### Modules with multiple functions
 
-You have a simple ```leaders()``` function, but what if you want your module to be a little smarter, returning leaders for a specific country? You can add a new function and rewrite module.exports like this:
+In that example, we have one ```scrapeData``` function and, like with ```request```, we make the module
+be just one function.
+
+What if you want your module to be a little smarter, and have multiple functions?
+In this example, I want to return leaders for a specific country, too.
+
+You can add a new function and rewrite module.exports like this:
 
 ```javascript
+function scrapeData() { ... }
+
+function fromCountry() { ... }
+
 module.exports = {
   all: scrapeData,
   fromCountry: fromCountry
@@ -433,7 +452,8 @@ module.exports = {
 };
 ```
 
-Here's how it works when someone uses your module:
+If someone is writing a script, and they have your module installed, they might call the ```scrapeData```
+function, saved as module.exports.all, like this:
 
 ```javascript
 var leaders = require('world-leaders');
@@ -480,5 +500,6 @@ function fromCountry(countryName, callback) {
 ```
 
 ### Testing your node module
+
 
 ### Including your package in a server
