@@ -410,7 +410,7 @@ Then, on the command line, run ```npm publish```. You will be asked to log in.
 
 If everything goes well, you should have a module listed at npmjs.com/package/PACKAGENAME
 
-If you ever need to update the module, go to package.json, increase your version number, and re-run ```npm publish```. You cannot re-publish a module without changing the version number, because that would be confusing.
+If you ever need to update the module, go to package.json, increase your version number, and re-run ```npm publish```. You cannot change and re-publish a module with the same version number, because that would be confusing.
 
 ### Modules with multiple functions
 
@@ -480,5 +480,134 @@ function fromCountry(countryName, callback) {
 ```
 
 ### Testing your node module
+
+You should write tests to make sure that your module returns consistent responses, even as you continue changing the code. In fact, many people believe you should
+write tests first (test-driven development!). But this is a tutorial so you'll learn the testing part now.
+
+Install the mocha test module on the command line:
+
+```bash
+npm install mocha -g
+```
+
+In your package.json file, look for a "scripts" property and tell it that ```npm test``` should run mocha. Ideally you should change package.json to something like this:
+
+```javascript
+```
+{
+  "name": "world-leaders",
+   ...
+   ...
+  "scripts": {
+    "test": "mocha"
+  },
+  ...
+}
+```
+
+Now when you run ```npm test``` on the command line, you should get the error
+
+```bash
+Error: cannot resolve path (or pattern) 'test'
+    at Object.lookupFiles (/usr/local/lib/node_modules/mocha/lib/utils.js:591:32)
+```
+
+Run ```mkdir test``` and create test.js inside of it. Here's what a simple test might look like:
+
+```javascript
+// use Node's built-in assert library
+var assert = require('assert');
+
+// import your own module from the parent directory
+var worldLeaders = require('../index.js');
+
+// use describe(function() { .. }) blocks to organize your tests
+// on the top level, we describe a feature ("list all world leaders")
+// on the next level, we describe an expectation of how it'll work ("separate head of state and head of government")
+describe("list all world leaders:", function() {
+  it("has leaders for 203 countries", function (done) {
+    // run your module's code
+    worldLeaders.all(function(anyErrors, leaders) {
+      // use assert.equal and other assert functions to check that responses match expectations
+      assert.equal(anyErrors, null);
+      assert.equal(leaders.length, 203);
+      
+      // when you test async, functions, call the done() function afterward
+      done();
+    });
+    
+    // usually this test fails if it takes 2 seconds or longer to call done()
+    // scraping takes some time, so let's give 4 seconds (4000 milliseconds)
+    this.timeout(4000);
+  });
+});
+```
+
+This test isn't testing your code so much, because if it fails it is likely Wiki editors who added or removed
+a country. The same thing could happen if you test that a leader's name is in the response.
+Here are some better tests which look at the structure of your data and behavior of your code:
+
+* each country has a head of state and a head of government
+* the list includes the United States
+* the United States has a President as both head of state and head of government, and they are equivalent
+* the United Kingdom's head of state is different from the head of government, who is the Prime Minister
+* there are between 190 and 210 countries
+
+Here's how I would test the first three:
+
+```javascript
+var assert = require('assert');
+var worldLeaders = require('../index.js');
+
+describe("calling worldLeaders.all() ", function() {
+  it("has one head of state and head of government for each country", function (done) {
+    worldLeaders.all(function(anyErrors, leaders) {
+      assert.equal(anyErrors, null);
+      // go through the list of countries and find any obvious missing people
+      for (var i = 0; i < leaders.length; i++) {
+        // requirements for each country
+        assert.notEqual(leaders[i].heads_of_state, null);
+        assert.notEqual(leaders[i].heads_of_state.length, 0);
+        assert.notEqual(leaders[i].heads_of_government, null);
+        assert.notEqual(leaders[i].heads_of_government.length, 0);
+      }
+      done();
+    });
+    // keep the timeout
+    this.timeout(4000);
+  });
+});
+
+describe("calling worldLeaders.for country() ", function() {
+  it("returns the US president as head of government and head of state", function (done) {
+    worldLeaders.fromCountry('United States', function(anyErrors, usLeaders) {
+      assert.equal(anyErrors, null);
+      assert.equal(usLeaders.heads_of_state.length, 1);
+      assert.equal(usLeaders.heads_of_state[0].title.name, "President");
+      asset.deepEqual(usLeaders.heads_of_state, usLeaders.heads_of_government);
+      done();
+    });
+  });
+});
+```
+
+When I ran ```npm test```, on the thing that I discovered was that I was getting "President President" as the title instead of
+just "President". Not good!
+
+```bash
+1) calling worldLeaders.for country()  returns the US president as head of government and head of state:
+
+      Uncaught AssertionError: 'President President' == 'President'
+      + expected - actual
+
+      -President President
+      +President
+
+      at test/test.js:30:14
+```
+
+This message tells me what I got and what I expected, and which test failed.
+
+
 
 ### Including your package in a server

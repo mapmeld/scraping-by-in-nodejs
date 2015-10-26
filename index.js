@@ -61,8 +61,15 @@ function scrapeData (callback) {
           return leaders.map(function (leader_html) {
             // split on a hyphen
             var title = cheerio.load("<div>" + leader_html.split("&#x2013;")[0] + "</div>")("div");
+
             // get rid of the links to the references page
             title.find("sup").remove();
+            
+            // avoid duplicates
+            var madeTitle = title.text().trim();
+            if (madeTitle.split(/\s+/).length % 2 === 0) {
+              
+            }
 
             var person = cheerio.load("<div>" + leader_html.split("&#x2013;")[1] + "</div>")("div");
             person.find("sup").remove();
@@ -70,7 +77,7 @@ function scrapeData (callback) {
             return {
               // grab the text and the link for both sections
               title: {
-                name: title.text().trim(),
+                name: madeTitle,
                 wiki: "https://en.wikipedia.org" + title.find("a").attr("href")
               },
               person: {

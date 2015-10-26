@@ -1,6 +1,6 @@
 {
   "name": "world-leaders",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Sample scraper app",
   "main": "index.js",
   "scripts": {
