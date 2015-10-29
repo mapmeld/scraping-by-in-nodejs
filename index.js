@@ -67,8 +67,20 @@ function scrapeData (callback) {
             
             // avoid duplicates
             var madeTitle = title.text().trim();
-            if (madeTitle.split(/\s+/).length % 2 === 0) {
-              
+            var splitTitle = madeTitle.split(/\s+/);
+            if (splitTitle.length % 2 === 0) {
+              // could be a copy?
+              var offset = splitTitle.length / 2;
+              var copiedTitle = true;
+              for (var i = 0; i < offset; i++) {
+                if (splitTitle[i] !== splitTitle[i + offset]) {
+                  copiedTitle = false;
+                  break;
+                }
+              }
+              if (copiedTitle) {
+                madeTitle = splitTitle.slice(0, offset).join(" ");
+              }
             }
 
             var person = cheerio.load("<div>" + leader_html.split("&#x2013;")[1] + "</div>")("div");

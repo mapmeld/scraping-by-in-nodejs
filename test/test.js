@@ -24,12 +24,12 @@ describe("calling worldLeaders.all() ", function() {
 describe("calling worldLeaders.for country() ", function() {
   it("returns the US president as head of government and head of state", function (done) {
     worldLeaders.fromCountry('United States', function(anyErrors, usLeaders) {
-      console.log(JSON.stringify(usLeaders));
       assert.equal(anyErrors, null);
       assert.equal(usLeaders.heads_of_state.length, 1);
       assert.equal(usLeaders.heads_of_state[0].title.name, "President");
-      asset.deepEqual(usLeaders.heads_of_state, usLeaders.heads_of_government);
+      assert.deepEqual(usLeaders.heads_of_state, usLeaders.heads_of_government);
       done();
     });
+    this.timeout(4000);
   });
 });

@@ -628,6 +628,8 @@ just "President". Not good!
       at test/test.js:30:14
 ```
 
-This message tells me what I got and what I expected, and which test failed.
+This message tells me the test that failed, including what came out of the program, and what I expected.
+
+
 
 ### Including your package in a server
