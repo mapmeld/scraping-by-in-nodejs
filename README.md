@@ -68,7 +68,7 @@ This won't work because code is fast, and servers are fast, so getting the leade
 
 * ask Wikipedia for a list of world leaders
 * wait for Wikipedia to respond
-* wait to download the response
+* wait to finish downloading the response
 * run some code to add each leader to a list
 
 When the program reaches the next line, that list won't be ready yet. And you can't have the server wait.
@@ -652,7 +652,20 @@ After I wrote some code to fix this particular error, I can re-run ```npm test``
 
   2 passing (5s)
   ```
+  
+You should test your errors, too. My code sends back a "country not found" error if someone asks for a non-existent country. Here's
+how you can test one:
 
+```javascript
+it("returns an error when requesting a fake country", function (done) {
+  worldLeaders.fromCountry('Narnia', function(anyErrors, narniaLeaders) {
+    assert.equal(anyErrors, "country not found");
+    assert.equal(narniaLeaders, null);
+    done();
+  });
+  this.timeout(4000);
+});
+```
 
 ### Including your package in a server
 

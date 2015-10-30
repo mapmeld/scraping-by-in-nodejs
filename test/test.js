@@ -32,4 +32,13 @@ describe("calling worldLeaders.for country() ", function() {
     });
     this.timeout(4000);
   });
+  
+  it("returns an error when requesting a fake country", function (done) {
+    worldLeaders.fromCountry('Narnia', function(anyErrors, narniaLeaders) {
+      assert.equal(anyErrors, "country not found");
+      assert.equal(narniaLeaders, null);
+      done();
+    });
+    this.timeout(4000);
+  });
 });
