@@ -648,4 +648,73 @@ After I wrote some code to fix this particular error, I can re-run ```npm test``
 ### Including your package in a server
 
 There are several different web frameworks and servers in the NodeJS world, and they can all use your module. I'm going
-to create a simple example using the Express framework.
+to create a simple example using the Express framework.	
+
+Create another project folder where you are creating the server. Install only Express and your own package for now:
+
+```bash
+cd ..
+mkdir my-first-server
+cd my-first-server
+npm install express MYPACKAGE
+```
+
+Your Express server will set up a website on http://localhost:8080/ When someone goes to that page, we should show them a JSON list of all world leaders,
+and if someone goes to http://localhoat:8080/country/Albania they should see a list of Albanian leaders. Let's write app.js for that purpose:
+
+```javascript
+// load express and your own module
+var express = require("express");
+var worldLeaders = require("world-leaders");
+
+// this is how we initialize an Express app
+var app = express();
+
+app.get("/", function (req, res) {
+  // this is the homepage, where we return all world leaders
+  // req is the initial request from the browser. We don't call it "request" because it'd be confused with the "request" module
+  // res is the response. When you're finished getting callbacks and other data, use a response method to talk back to the browser
+  
+  worldLeaders.all(function (anyError, leaders) {
+    if (anyError) {
+      // don't throw errors anymore - you could crash the server! instead let the user know that they got an error
+      res.json({ error: anyError });
+    } else {
+      // here we are sending back JSON data, so it's best to use res.json method
+      res.json(leaders);
+    }
+  });
+});
+
+app.get("/country/:requestedCountry", function (req, res) {
+  // this is the API page for any country
+  // requestedCountry is available on req.params
+  // if it were a URL like ?requestedState=NY , you would check req.query.requestedState
+  // if it were a POST request, you'd need the body-parser module and req.body
+  
+  worldLeaders.fromCountry(req.params.requestedCountry, function (anyError, leaders) {
+    if (anyError) {
+      res.json({ error: anyError });
+    } else {
+      res.json(leaders);
+    }
+  });
+});
+
+// OK now the server knows what to do. Let's launch it:
+app.listen("8080", function() {
+  console.log("Server ready on http://localhost:8080");
+});
+```
+
+Now run your server with ```node app.js``` and wait for confirmation that it's running.
+
+That's all it takes. If you request http://localhost:8080 and http://localhost:8080/country/Albania they should work. If you try http://localhost:8080/country/Narnia
+or another incorrect country name, look what comes back:
+
+```javascript
+{"error": "country not found"}
+```
+
+That's an error thrown by the world-leaders module! By writing a good module, you've made it really easy to deliver data to this server, without having to create new
+errors or responses.
