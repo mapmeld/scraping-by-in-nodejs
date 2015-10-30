@@ -64,7 +64,16 @@ server.onRequest = function(url) {
 };
 ```
 
-This won't work because getting the leaders includes scraping a Wikipedia page and waiting for a response at a later time. This means you would want to write an asynchronous program with a callback:
+This won't work because code is fast, and servers are fast, so getting the leaders takes a lot of time by comparison. Your program will:
+
+* ask Wikipedia for a list of world leaders
+* wait for Wikipedia to respond
+* wait to download the response
+* run some code to add each leader to a list
+
+When the program reaches the next line, that list won't be ready yet. And you can't have the server wait.
+
+So you want to write an asynchronous program. That makes a request, and tells the function to use a special callback function when it's done:
 
 ```javascript
 // pseudocode!
