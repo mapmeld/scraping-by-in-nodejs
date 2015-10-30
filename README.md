@@ -401,6 +401,9 @@ var cheerio = require('cheerio');
 
 function scrapeData (callback) { ... }
 
+// remove the part after the function where you called scrapeData...
+// now scrapeData is called by people who use this module
+
 module.exports = scrapeData;
 ```
 
@@ -524,7 +527,6 @@ npm install mocha -g
 In your package.json file, look for a "scripts" property and tell it that ```npm test``` should run mocha. Ideally you should change package.json to something like this:
 
 ```javascript
-```
 {
   "name": "world-leaders",
    ...
