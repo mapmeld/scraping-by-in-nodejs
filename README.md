@@ -609,6 +609,8 @@ describe("calling worldLeaders.for country() ", function() {
       asset.deepEqual(usLeaders.heads_of_state, usLeaders.heads_of_government);
       done();
     });
+    // change the timeout time here, too
+    this.timeout(4000);
   });
 });
 ```
@@ -630,6 +632,20 @@ just "President". Not good!
 
 This message tells me the test that failed, including what came out of the program, and what I expected.
 
+After I wrote some code to fix this particular error, I can re-run ```npm test```
+
+```bash
+  calling worldLeaders.all()
+    ✓ has one head of state and head of government for each country (2864ms)
+
+  calling worldLeaders.for country()
+    ✓ returns the US president as head of government and head of state (2024ms)
+
+  2 passing (5s)
+  ```
 
 
 ### Including your package in a server
+
+There are several different web frameworks and servers in the NodeJS world, and they can all use your module. I'm going
+to create a simple example using the Express framework.
