@@ -41,6 +41,9 @@ function scrapeData (callback) {
 
         // separate out the head of state and head of government from this country-row
         var heads_of_state = $(country.find("td")[0]);
+        if (!heads_of_state.length) {
+          heads_of_state = $(country.find("th")[0]);
+        }
         var heads_of_government;
         if (country.find("td").length > 1) {
           // head of government is different from heads of state
