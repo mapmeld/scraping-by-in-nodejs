@@ -3,9 +3,9 @@
 
 This tutorial is for newbies or near-newbies to NodeJS, who have written some jQuery before.
 
-By the end of the tutorial, you will publish a site-scraping module on npmjs.com - then you and other developers can get data out of that site by installing your module.
+By the end of the tutorial, you will publish a site-scraping module on NPM - then you and other developers can get data out of that site by installing your module.
 
-This repo contains the code for my own scraper module, which returns a list of world leaders from Wikipedia. You're welcome to look at the code or use it IRL.
+This repo contains the code for my own scraper module, which returns a list of world leaders from Wikipedia. You're welcome to look at the code or use it in a real application.
 
 ### Thinking about what web servers are
 
@@ -31,10 +31,9 @@ server.onRequest = function (url) {
   } else if (url == "/profile/:username") {
     // look up this user in the database
     database.findUser(username, function (userData) {
-      // when the database finds this user and reports back, we can continue responding
-      // the template will be written in a format like HAML, JADE, ERB, etc
-      // the browser will see just HTML and not know it was made from a template
-      send(profile.template, { user: userData });
+      // after the database finds this user and reports back, we can continue responding
+      // the browser will see just this HTML or other text
+      send('hello ' + userData.name);
     });
     // don't return anything from this function - wait for the callback function to be called with data
   }
@@ -47,14 +46,11 @@ To repeat from before: the server was designed around three things: figuring out
 
 ### Thinking about NodeJS, servers, and modules
 
-NodeJS servers are similar to that pseudocode example, especially if you use a framework like ExpressJS. But before you write a server, it's easier to write a module. A module can be a set of data
-and functions which you can import into other NodeJS programs. Using Browserify and WebPack, you can
-also use many modules as client-side / browser libraries. There are also NodeJS command line tools and
-small hardware devices.
+NodeJS servers, especially frameworks like ExpressJS, are similar to that pseudocode. But before you write a server, it's easier to write a module. A module is a set of data and functions which you can import into other NodeJS programs. Using tools such as Browserify or WebPack, you could also use modules as client-side / browser libraries. There are also NodeJS command line tools and small hardware devices.
 
-In this example, scraping a [list of world leaders from Wikipedia] (https://en.wikipedia.org/wiki/List_of_current_heads_of_state_and_government), there is a good use case to separate your app and the leader module. You could probably turn it into an interesting API, where people can request the full table, an individual country, or historical data.
+In this example, scraping a <a href='https://en.wikipedia.org/wiki/List_of_current_heads_of_state_and_government'>list of world leaders from Wikipedia</a>, there is a good use case to separate your app and the leader module. You could probably turn it into an interesting API, where people can request the full table, an individual country, or historical data.
 
-If you don't do a lot of calls to other websites and servers, you might think about making a step-by-step, synchronous program like this:
+Your first guess might be to make a step-by-step program like this:
 
 ```javascript
 // pseudocode!
@@ -64,16 +60,16 @@ server.onRequest = function(url) {
 };
 ```
 
-This won't work because code is fast, and servers are fast, so getting the leaders takes a lot of time by comparison. Your program will:
+This won't work because code is fast, and connecting to Wikipedia takes a lot of time by comparison. Your program will:
 
 * ask Wikipedia for a list of world leaders
 * wait for Wikipedia to respond
 * wait to finish downloading the response
 * run some code to add each leader to a list
 
-When the program reaches the next line, that list won't be ready yet. And you can't have the server wait.
+Making the server wait here in NodeJS is blocking new requests from coming in to your server.
 
-So you want to write an asynchronous program. That makes a request, and tells the function to use a special callback function when it's done:
+So you want to write an asynchronous program. This will make a request, and use a new anonymous callback function to process the data when it's done:
 
 ```javascript
 // pseudocode!
@@ -84,7 +80,7 @@ server.onRequest = function(url) {
 };
 ```
 
-The getLeaders function does not return anything. Instead it starts a chain of requests and processing, and you give it a function to call when it's done.
+Before we wrote ```leaders = getLeaders()``` because the function returned data immediately and would store data in the ```leaders``` variable.  In the async version, nothing is returned and instead data is returned inside the callback function, after all of the internal work is completed.
 
 ### Create your project with git init and npm init
 
@@ -99,25 +95,25 @@ git init
 npm init
 ```
 
-npm init will ask you some questions. You can type something or press Enter to accept a suggestion / leave it blank.
+npm init will ask you some questions. You can type answers or press Enter to accept a suggestion / leave it blank.
 
-For "git repository" you can leave it blank, or create a repo on GitHub. Paste in the HTTP URL.
+For "git repository" you can leave it blank, or paste a URL for your GitHub repo.
 
 For "license" you can review [several options](http://choosealicense.com/) for open-sourcing your code, but I typically use MIT.
 
-Running npm init creates package.json, the main source of information about your module, its use, and the libraries that it needs to work. You can modify this file later directly, or re-run npm init.
+These settings are stored in package.json, the main source for NPM's information about your module, its use, and the other libraries that it depends on to work. You can modify this file later directly, or re-run npm init.
 
 ### Install Node modules as dependencies
 
-You don't need to re-invent the wheel to load an HTML page into your script. In the command prompt:
+You don't need to re-invent the wheel to download HTML from the web. In the command prompt, install the "request" module:
 
 ```bash
 npm install request --save
 ```
 
-This asks npmjs.com if it has a module named "request", and installs the latest version. Adding --save puts the module and its version into your package.json file, under "dependencies".
+This installs the latest version on npmjs.com for this module. Adding --save puts the module and its version into your package.json file, under "dependencies". Make sure to list any and all dependencies for your module in the package.json, so other developers can get them all at the same time.
 
-This tutorial also uses Cheerio, an awesome module which lets you use jQuery-like features. Let's install that one, too:
+This tutorial also uses Cheerio, which lets you use jQuery-like features. Let's install that one, too:
 
 ```bash
 npm install cheerio --save
@@ -125,8 +121,8 @@ npm install cheerio --save
 
 ### GET-ing a page
 
-I'm creating a file called index.js to be the main part of my script. The first thing it needs to do to scrape a webpage is to load the HTML source of the page as a string. Let's try that, and then use
-console.log to print it out to the command line, to see if it worked.
+I created a file named index.js to be my main script. The first thing it needs to do to scrape a webpage is to load the HTML source of a webpage as a string. Let's try that, and then use
+console.log to print it out to the command line and check if it worked.
 
 ```javascript
 // real JavaScript, not pseudocode anymore
@@ -138,11 +134,11 @@ var request = require('request');
 // request is a function that I can use like this:
 
 request("https://en.wikipedia.org/wiki/List_of_current_heads_of_state_and_government",
-  function (anyError, server_response, body) {
+  function (anyError, serverResponse, body) {
   // when you're done getting the page, this gets called
 
   if (anyError) {
-    // let's go ahead and crash the script if there is an error
+    // crash the script if there is an error
     throw anyError;
   } else {
     // console.log will output to the command line
@@ -153,7 +149,7 @@ request("https://en.wikipedia.org/wiki/List_of_current_heads_of_state_and_govern
 
 Run ```node index.js``` and see what happens.
 
-If everything works, you should see a bunch of HTML output to the command line. If you are offline and unable to connect to Wikipedia HTTPS, you see an error like this:
+If everything works, you should see a lot of HTML output to the command line. If you are offline and unable to connect to Wikipedia, you might see an error like this:
 
 ```bash
 scraping-by-in-node-js/versions/1.js:14
@@ -165,7 +161,7 @@ Error: getaddrinfo ENOTFOUND en.wikipedia.org en.wikipedia.org:443
     at GetAddrInfoReqWrap.onlookup [as oncomplete] (dns.js:77:26)
 ```
 
-This is a good time to **check that your data is in the HTML source of the page**. If it is loaded later by JavaScript, like Airbnb and other house-listing sites, then you should look up the right URL to request and scrape.
+This is a good time to **check that the data that you want to scrape is in the HTML source**. If data is loaded later by JavaScript, as it is on Airbnb and other house-listing sites, then you should look up the right URL to request and scrape.
 
 Here's part of the HTML source for the head of state and government:
 
@@ -205,19 +201,19 @@ Here's part of the HTML source for the head of state and government:
 </table>
 ```
 
-The HTML has some interesting data: the country's name and article, the position's name and Wikipedia article, and the current name and Wikipedia article for that leader. We can see that each country gets a tr element, and the leader gets a td element, which can be two columns wide if -like in the US- the leader is head of state and head of government.
+The HTML has some interesting data: the country's name and article, the position's name and Wikipedia article, and the current name and Wikipedia article for that leader. We can see that each country gets a ```tr``` element, and the leader gets a ```td``` element, which can be two columns wide if -like in the US- the leader is head of state and head of government.
 
 ### Using jQuery to get leader names
 
-In jQuery, if you wanted to get a list of leader td elements out of that HTML, you would do this:
+In jQuery, if you wanted to get a list of leader ```td``` elements from that HTML, you would write a selector such as this:
 
 ```javascript
 $("table.wikitable td")
 ```
 
-Go to Wikipedia, open the browser, and start testing this yourself.
+On Wikipedia, you can open the developer tools and test this yourself.
 
-There are several jQuery functions you could use to iterate, but to avoid losing anyone, let's write a for loop for now:
+There are several jQuery and modern-JavaScript functions you could use to iterate, but to avoid overcomplicating things, let's write a for loop:
 
 ```javascript
 var leaders = $("table.wikitable td");
@@ -235,7 +231,7 @@ Prime Minister – Hwang Kyo-ahn
 
 ### Translating jQuery to Cheerio to get leader names
 
-Let's go back to index.js and start using the cheerio module that we installed. It's a good idea to open up [the official documentation on npmjs](https://www.npmjs.com/package/cheerio) for this module.
+Let's go back to index.js and start using the cheerio module that we installed. It's a good idea to open up <a href="https://www.npmjs.com/package/cheerio">the official documentation</a> for this module as a reference.
 
 ```javascript
 // versions/2.js
@@ -245,7 +241,7 @@ var request = require('request');
 var cheerio = require('cheerio');
 
 request("https://en.wikipedia.org/wiki/List_of_current_heads_of_state_and_government",
-  function (anyError, server_response, body) {
+  function (anyError, serverResponse, body) {
   // when you're done getting the page, this gets called
 
   if (anyError) {
@@ -265,11 +261,11 @@ request("https://en.wikipedia.org/wiki/List_of_current_heads_of_state_and_govern
 
 Cool! It should work the same in NodeJS as in the browser!
 
-### Returning JSON data instead of logging
+### Returning data instead of logging
 
-If this scraper is ever going to become a module, I need a function that returns a JSON object on command, instead of just dumping out text.
+If I want this scraper to become a re-usable module, I need to hide these implementation details someplace and create a single function that other users can call.
 
-I'm going to call this function scrapeData. Because it has the asynchronous code from requesting a page inside of it, I will pass data back through a callback function instead of trying to use "return". This callback function will be the new way to handle errors and returned data.
+I'm going to name this function scrapeData. Because it has asynchronous code requesting a page inside of it, scrapeData also needs to be asynchronous. I will pass the data back through a callback function instead of trying to use "return". This callback function will be the new way to handle errors and world leader data.
 
 ```javascript
 // versions/3.js
@@ -290,13 +286,16 @@ function scrapeData (callback) {
       for (var i = 0; i < leaders.length; i++) {
         leaderData.push( $(leaders[i]).text() );
       }
-      callback(null, leaderData);
+      callback(anyError, leaderData);
     }
   });
 }
+```
 
-// here's the code which starts the scraper and decides what to do with the returned data
-// it looks similar to what we had before, but we've separated the scraping and DOM manipulation from how we handle the data and errors
+Code which calls scrapeData and handles its responses would look like this:
+
+```javascript
+// we've separated the reusable scraping and DOM manipulation from the application and output
 scrapeData(function (anyError, leaders) {
   if (anyError) {
     throw anyError;
@@ -317,19 +316,20 @@ When I run ```node index.js```, I now get a JSON array of leader names:
 ...
 ```
 
-### Make your data awesome
+### Make your data awesome and structured
 
 If you want this module to be useful to you and others, keep pushing to organize and improve the data.
-This list of leader names is interesting, but if I were getting JSON data in my app, I'd like it to be cleaner, and I'd like it to be organized by country. I'd also like it to handle unusual cases, like countries with multiple heads of state / heads of government.
+
+A list of leader names is interesting, but we can aim for cleaner, more structured JSON data to be returned. I'd like it to organize leaders by country, and handle unusual cases such as countries with multiple heads of state.
 
 Something like this:
 
 ```javascript
-[
+[  // array of countries
   {
     "country": "United States",
     "wiki": "https://en.wikipedia.org/wiki/United_States",
-    "heads_of_state": [
+    "heads_of_state": [ // array of heads of state
       {
         "title": {
           "name": "President",
@@ -341,7 +341,7 @@ Something like this:
         }
       }
     ],
-    "heads_of_government": [
+    "heads_of_government": [ // array of heads of government (can be same as head of state)
       {
         "title": {
           "name": "President",
@@ -357,19 +357,21 @@ Something like this:
 ]
 ```
 
-I'm going to jump ahead... my final code is about 100 lines, but most of it is specific to my scraper. Here are a few snippets which show you how much Cheerio looks like jQuery:
+Once you know what you want the response to look like, you can use Cheerio to start pulling more data from the HTML and inserting it into this structure. My final code is about 100 lines, most of it is specific to this Wikipedia page and my scraper. Here are a few snippets which show you how much Cheerio looks like jQuery:
 
 ```javascript
 if (country.find("td").length > 1) {
-  // head of government is different from heads of state
+  // head of government and heads of state <td>s exist
   heads_of_government = $(country.find("td")[1]);
 } else {
-  // head of government is the same as heads of state
+  // head of government is the same as heads of state, copy object
   heads_of_government = heads_of_state;
 }
 ...
+// get the URL of a link
 wikiLink = title.find("a").attr("href");
 ...
+// remove an element
 person.find("sup").remove();
 ```
 
@@ -377,17 +379,16 @@ You can view the full code here: <a href="https://github.com/mapmeld/scraping-by
 
 ### Turning your script into a module
 
-On the client-side, JavaScript programs are a collection of libraries and scripts. In NodeJS, you want to package
-your code into a publishable, reusable module. For example, your code uses the request and cheerio modules. Once you
-```npm install request``` and ```require("request")``` then you have it in your code, and you can call it like this:
+On the client-side, JavaScript programs are a collection of libraries and scripts. In NodeJS, you want to publish
+all of your code as a reusable module. For example, your code uses the request and cheerio modules. As you've seen with request and cheerio, once you've installed a module you can use it like this:
 
 ```javascript
 var request = require("request");
 request("http://example.com", function(anyError, serverResponse, body) { ... });
 ```
 
-Share your scrapeData function so that people can ```npm install``` your module someday.
-In the script, add this line at the end:
+Let's share your scrapeData function so that people can ```npm install``` your module someday.
+In the script, add this line to make the module's main export your scrapeData function.
 
 ```javascript
 module.exports = scrapeData;
@@ -407,17 +408,17 @@ function scrapeData (callback) { ... }
 module.exports = scrapeData;
 ```
 
-You can test that you are module-ready by using ```require``` in the Node REPL.
+You can test your module in the Node REPL:
 
 On your command line, type ```node```, enter, and then enter these lines:
 
 ```javascript
-leaders = require('./index.js');
+getLeaders = require('./index.js');
 > [Function: scrapeData]
-leaders(function(err, data) { console.log(JSON.stringify(data)) })
+getLeaders(function(err, data) { console.log(JSON.stringify(data)) })
 ```
 
-If everything went OK, you should first get an "undefined" response, from your function not returning anything, then when the request finishes, your data should come out.
+If everything went OK, you should first get an "undefined" response, from your getLeaders call not returning anything synchronously, then when the request finishes your data will come out.
 
 ### Publishing your node module
 
@@ -435,7 +436,7 @@ When you want to update the module, re-open package.json, increase your version 
 
 ### Modules with multiple functions
 
-In that example, we have one ```scrapeData``` function and, like with ```request```, we make the module
+In that example, we have one ```scrapeData``` function and, as with ```request```, we make the module
 contain just one function.
 
 What if you want your one module to be a little smarter, and have multiple functions and options?
@@ -455,7 +456,7 @@ module.exports = {
 };
 ```
 
-You can also include JSON data in your exports. This isn't done so much, but it's helpful if your module comes with an interesting dataset.
+You can also include JSON data in your exports. This isn't done so often, but it's helpful if your module comes with an interesting dataset.
 
 ```javascript
 module.exports = {
