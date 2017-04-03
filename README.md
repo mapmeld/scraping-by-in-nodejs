@@ -519,13 +519,14 @@ function fromCountry(countryName, callback) {
 You should write tests to make sure that your module returns consistent responses, even as you continue changing the code. In fact, many people believe you should
 write tests first (test-driven development!). But this is a tutorial so you'll learn the testing part now.
 
-Install the mocha test module on the command line:
+Install the mocha test module and command line tools:
 
 ```bash
 npm install mocha -g
+npm install mocha --save-dev
 ```
 
-In your package.json file, look for a "scripts" property and tell it that ```npm test``` should run mocha. Ideally you should change package.json to something like this:
+In your package.json file, look for a "scripts" property and add a test script:
 
 ```javascript
 {
