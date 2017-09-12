@@ -1,6 +1,8 @@
 # How To:
 ## Scraping By in NodeJS
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/mapmeld/scraping-by-in-nodejs.svg)](https://greenkeeper.io/)
+
 This tutorial is for newbies or near-newbies to NodeJS, who have written some jQuery before.
 
 By the end of the tutorial, you will publish a site-scraping module on NPM - then you and other developers can get data out of that site by installing your module.
